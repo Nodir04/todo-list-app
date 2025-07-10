@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List App</title>
-<link rel="stylesheet" href="style.css">
-
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
@@ -15,10 +14,12 @@
         </div>
 
         <div class="input-section">
-            <div class="input-container">
-                <input type="text" id="todoInput" placeholder="Add a new task..." maxlength="100">
-                <button id="addBtn">Add Task</button>
-            </div>
+            <form class="input-container" id="todoForm">
+                <label for="todoInput" class="visually-hidden">New task</label>
+                <input type="text" id="todoInput" placeholder="Add a new task..." maxlength="100" required aria-describedby="input-help">
+                <button type="submit" id="addBtn">Add Task</button>
+                <div id="input-help" class="visually-hidden">Enter a task and press Enter or click Add Task</div>
+            </form>
             
             <div class="filters">
                 <button class="filter-btn active" data-filter="all">All</button>
@@ -27,12 +28,14 @@
             </div>
         </div>
 
-        <div class="todo-list" id="todoList">
+        <div class="todo-list" id="todoList" role="list">
             <div class="empty-state">
                 <h3>No tasks yet</h3>
                 <p>Add your first task above to get started!</p>
             </div>
         </div>
+
+        <div class="error-message" id="errorMessage" role="alert" aria-live="polite"></div>
 
         <div class="stats">
             <span id="totalTasks">0 tasks</span>
@@ -41,6 +44,5 @@
     </div>
 
     <script src="script.js"></script>
-
 </body>
 </html>
