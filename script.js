@@ -1,5 +1,7 @@
 <script>
-        class TodoApp {
+window.todoStorage = window.todoStorage || [];
+
+class TodoApp {
     constructor() {
         this.todos = [];
         this.currentFilter = 'all';
@@ -16,28 +18,57 @@
         const todoForm = document.getElementById('todoForm');
         const todoList = document.getElementById('todoList');
         const filterBtns = document.querySelectorAll('.filter-btn');
+        const addBtn = document.getElementById('addBtn');
+        const todoInput = document.getElementById('todoInput');
+
+        console.log('Binding events...', { todoForm, addBtn, todoInput });
 
         // Use form submit for better accessibility
-        todoForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleAddTask();
-        });
+        if (todoForm) {
+            todoForm.addEventListener('submit', (e) => {
+                console.log('Form submitted');
+                e.preventDefault();
+                this.handleAddTask();
+            });
+        }
+
+        // Also bind click event to button directly as backup
+        if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+                console.log('Add button clicked');
+                e.preventDefault();
+                this.handleAddTask();
+            });
+        }
+
+        // Enter key on input
+        if (todoInput) {
+            todoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    console.log('Enter key pressed');
+                    e.preventDefault();
+                    this.handleAddTask();
+                }
+            });
+        }
 
         // Event delegation for delete buttons
-        todoList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-btn')) {
-                const taskId = parseInt(e.target.dataset.taskId);
-                this.deleteTask(taskId);
-            }
-        });
+        if (todoList) {
+            todoList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const taskId = parseInt(e.target.dataset.taskId);
+                    this.deleteTask(taskId);
+                }
+            });
 
-        // Event delegation for checkboxes
-        todoList.addEventListener('change', (e) => {
-            if (e.target.classList.contains('todo-checkbox')) {
-                const taskId = parseInt(e.target.dataset.taskId);
-                this.toggleTask(taskId);
-            }
-        });
+            // Event delegation for checkboxes
+            todoList.addEventListener('change', (e) => {
+                if (e.target.classList.contains('todo-checkbox')) {
+                    const taskId = parseInt(e.target.dataset.taskId);
+                    this.toggleTask(taskId);
+                }
+            });
+        }
 
         // Filter buttons
         filterBtns.forEach(btn => {
@@ -87,17 +118,22 @@
     }
 
     handleAddTask() {
+        console.log('handleAddTask called');
         const taskText = this.getInputValue();
+        console.log('Task text:', taskText);
         
         if (!this.validateTask(taskText)) {
+            console.log('Task validation failed');
             return;
         }
 
+        console.log('Adding task:', taskText);
         this.addTask(taskText);
         this.clearInput();
     }
 
     addTask(text) {
+        console.log('addTask called with:', text);
         const task = {
             id: Date.now(),
             text: text,
@@ -105,7 +141,9 @@
             createdAt: new Date().toISOString()
         };
 
+        console.log('Created task:', task);
         this.todos.unshift(task);
+        console.log('Current todos:', this.todos);
         this.saveTodos();
         this.render();
     }
@@ -233,11 +271,8 @@
 
     saveTodos() {
         try {
-            // For local development, uncomment the line below and comment the in-memory storage
-            // localStorage.setItem('todos', JSON.stringify(this.todos));
-            
-            // Using in-memory storage for Claude.ai compatibility
-            this.savedTodos = JSON.stringify(this.todos);
+            // Store in global window object for persistence within the session
+            window.todoStorage = [...this.todos];
         } catch (e) {
             console.warn('Could not save todos:', e);
         }
@@ -245,15 +280,11 @@
 
     loadTodos() {
         try {
-            // For local development, uncomment the lines below and comment the in-memory storage
-            // const saved = localStorage.getItem('todos');
-            // if (saved) {
-            //     this.todos = JSON.parse(saved);
-            // }
-            
-            // Using in-memory storage for Claude.ai compatibility
-            if (this.savedTodos) {
-                this.todos = JSON.parse(this.savedTodos);
+            // Load from global window object
+            if (window.todoStorage && window.todoStorage.length > 0) {
+                this.todos = [...window.todoStorage];
+            } else {
+                this.todos = [];
             }
         } catch (e) {
             console.warn('Could not load todos:', e);
@@ -262,6 +293,8 @@
     }
 }
 
-// Initialize the app
-const app = new TodoApp();
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new TodoApp();
+});
     </script>
